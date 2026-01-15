@@ -1,29 +1,30 @@
 const express = require('express');
 const app = express();
 const taskRoutes = require('./routes/task.routes');
+const connectDb = require('./db/connect');
+require('dotenv').config();
+const path = require('path');
 
-app.use('/api/v1/tasks', taskRoutes);
 
+// middlewares
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: false }));
 
-app.get('/', (req, res) => {
-    res.send('Welcome to the Task Manager API');
-});
-
-app.get('/test', (req, res) => {
-    res.send('Test route is working!');
-});
-
-const port = process.env.PORT || 3000;
+// routes
+app.use('/api/v1/tasks', taskRoutes);
 
 
+const port = process.env.PORT || 5000;
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
-
-
-
-module.exports = app;
+const start = async() => {
+    try {
+        await connectDb(process.env.MONGO_URI);
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
+    } catch (error) {
+        console.log(error);
+    }
+}
+start();
